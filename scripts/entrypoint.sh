@@ -6,7 +6,7 @@ set -e
 echo "Starting container in mode: $SPARK_MODE"
 SPARK_NO_DAEMONIZE=true
 
-./opt/scripts/check_env.sh
+. /opt/scripts/check_env.sh
 
 
 if [ "$SPARK_MODE" = "master" ]; then
