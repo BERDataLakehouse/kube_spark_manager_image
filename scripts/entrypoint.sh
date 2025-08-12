@@ -4,6 +4,7 @@ set -e
 
 export SPARK_NO_DAEMONIZE=true
 
+#TODO MAKE THIS CRASH IF IT FAILS, BECAUSE RIGHT NOW IT DOESNT CRASH IF IT FAILS
 /opt/scripts/check_env.sh
 
 if [ "$SPARK_MODE" = "master" ]; then

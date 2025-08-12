@@ -6,6 +6,12 @@ Apache Spark in a standalone mode using Docker and for Kubernetes.
 It re-uses the BERDL Docker image as a base, which provides a consistent environment for running Spark jobs and python
 applications. 
 
+
+# ENV VARS
+* SPARK_PREFIX are official Spark environment variables, such as `SPARK_MASTER_URL`, `SPARK_DRIVER_HOST`, etc.
+* BERDL_PREFIX are our specialized ones
+
+
 ## Getting Started
 
 1. Clone the repository
