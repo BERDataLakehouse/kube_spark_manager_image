@@ -1,7 +1,10 @@
 # KBase Spark Standalone Deployment
 
 This repository contains the Dockerfile and associated configurations for deploying
-Apache Spark in a standalone mode using Docker.
+Apache Spark in a standalone mode using Docker and for Kubernetes.
+
+It re-uses the BERDL Docker image as a base, which provides a consistent environment for running Spark jobs and python
+applications. 
 
 ## Getting Started
 
