@@ -5,18 +5,19 @@ version: '3'
 services:
 
   spark-master:
-    build:
-      context: .
-      dockerfile: Dockerfile
+
+    image: localhost/spark/spark:test
+#    entrypoint: /bin/sleep infinity
     platform: linux/amd64
     ports:
       - "8090:8090"
     environment:
       - SPARK_MODE=master
+      - SPARK_MASTER_HOST=spark-master
       - SPARK_MASTER_WEBUI_PORT=8090
-      - MAX_EXECUTORS=4
-      - EXECUTOR_CORES=2
-      - MAX_CORES_PER_APPLICATION=10
+#      - MAX_EXECUTORS=4
+#      - EXECUTOR_CORES=2
+#      - MAX_CORES_PER_APPLICATION=10
       - POSTGRES_USER=hive
       - POSTGRES_PASSWORD=hivepassword
       - POSTGRES_DB=hive
@@ -32,9 +33,7 @@ services:
       - MINIO_LOG_USER_SECRET_KEY=minio123
       
   spark-worker-1:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: localhost/spark/spark:test
     platform: linux/amd64
     depends_on:
       - spark-master
@@ -61,9 +60,7 @@ services:
       - MINIO_LOG_USER_SECRET_KEY=minio123
 
   spark-worker-2:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: localhost/spark/spark:test
     platform: linux/amd64
     depends_on:
       - spark-master
@@ -108,57 +105,57 @@ services:
       - ./scripts/redis_container_script.py:/app/redis_container_script.py
     depends_on:
       - spark-master
+#
+#  postgres:
+#    image: postgres:16.3
+#    # To avoid incorrect user permissions, manually create the volume directory before running Docker.
+#    # export UID=$(id -u)
+#    # export GID=$(id -g)
+#    # mkdir -p cdr/cdm/jupyter/cdm-postgres
+#    # reference: https://forums.docker.com/t/systemd-coredump-taking-ownership-of-tmp-db-directory-and-contents-in-rails-app/93609
+#    user: "${UID}:${GID}"
+#    ports:
+#      - "5432:5432"
+#    environment:
+#      - POSTGRES_USER=hive
+#      - POSTGRES_PASSWORD=hivepassword
+#      - POSTGRES_DB=hive
+#    volumes:
+#      - ./cdr/cdm/jupyter/cdm-postgres:/var/lib/postgresql/data  # For local development only. In Rancher development, PostgreSQL data shouldn't be stored in a shared mount.
 
-  postgres:
-    image: postgres:16.3
-    # To avoid incorrect user permissions, manually create the volume directory before running Docker.
-    # export UID=$(id -u)
-    # export GID=$(id -g)
-    # mkdir -p cdr/cdm/jupyter/cdm-postgres
-    # reference: https://forums.docker.com/t/systemd-coredump-taking-ownership-of-tmp-db-directory-and-contents-in-rails-app/93609
-    user: "${UID}:${GID}"
-    ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_USER=hive
-      - POSTGRES_PASSWORD=hivepassword
-      - POSTGRES_DB=hive
-    volumes:
-      - ./cdr/cdm/jupyter/cdm-postgres:/var/lib/postgresql/data  # For local development only. In Rancher development, PostgreSQL data shouldn't be stored in a shared mount.
-
-  redis:
-    image: redis:8.0.1
-    ports:
-      - "6379:6379"
-    volumes:
-      - ./cdr/cdm/jupyter/cdm-redis:/data
-    command: redis-server --appendonly yes
-    
-  minio:
-    image: minio/minio
-    ports:
-      - "9002:9002"
-      # MinIO Console is available at http://localhost:9003
-      - "9003:9003"
-    environment:
-      MINIO_ROOT_USER: minio
-      MINIO_ROOT_PASSWORD: minio123
-    healthcheck:
-      # reference: https://github.com/rodrigobdz/docker-compose-healthchecks?tab=readme-ov-file#minio-release2023-11-01t18-37-25z-and-older
-      test: timeout 5s bash -c ':> /dev/tcp/127.0.0.1/9002' || exit 1
-      interval: 1s
-      timeout: 10s
-      retries: 5
-    # Note there is no bucket by default
-    command: server --address 0.0.0.0:9002 --console-address 0.0.0.0:9003 /data
-
-  minio-create-bucket:
-    image: minio/mc
-    depends_on:
-      minio:
-        condition: service_healthy
-    entrypoint: /scripts/minio_create_bucket_entrypoint.sh
-    volumes:
-      - ./config/cdm-read-write-policy.json:/config/cdm-read-write-policy.json
-      - ./config/cdm-spark-job-logs-policy.json:/config/cdm-spark-job-logs-policy.json
-      - ./scripts/minio_create_bucket_entrypoint.sh:/scripts/minio_create_bucket_entrypoint.sh
+#  redis:
+#    image: redis:8.0.1
+#    ports:
+#      - "6379:6379"
+#    volumes:
+#      - ./cdr/cdm/jupyter/cdm-redis:/data
+#    command: redis-server --appendonly yes
+#
+#  minio:
+#    image: minio/minio
+#    ports:
+#      - "9002:9002"
+#      # MinIO Console is available at http://localhost:9003
+#      - "9003:9003"
+#    environment:
+#      MINIO_ROOT_USER: minio
+#      MINIO_ROOT_PASSWORD: minio123
+#    healthcheck:
+#      # reference: https://github.com/rodrigobdz/docker-compose-healthchecks?tab=readme-ov-file#minio-release2023-11-01t18-37-25z-and-older
+#      test: timeout 5s bash -c ':> /dev/tcp/127.0.0.1/9002' || exit 1
+#      interval: 1s
+#      timeout: 10s
+#      retries: 5
+#    # Note there is no bucket by default
+#    command: server --address 0.0.0.0:9002 --console-address 0.0.0.0:9003 /data
+#
+#  minio-create-bucket:
+#    image: minio/mc
+#    depends_on:
+#      minio:
+#        condition: service_healthy
+#    entrypoint: /scripts/minio_create_bucket_entrypoint.sh
+#    volumes:
+#      - ./config/cdm-read-write-policy.json:/config/cdm-read-write-policy.json
+#      - ./config/cdm-spark-job-logs-policy.json:/config/cdm-spark-job-logs-policy.json
+#      - ./scripts/minio_create_bucket_entrypoint.sh:/scripts/minio_create_bucket_entrypoint.sh
