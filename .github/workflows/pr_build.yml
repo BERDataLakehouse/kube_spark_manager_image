@@ -1,43 +1,58 @@
----
-name: Pull Request Build, Tag, & Push
+name: Build Jupyterhub Notebook Child Image
+
 on:
+  workflow_dispatch:
+  push:
+    branches: [ "main", "master", "develop" ]
+    # Publish semver tags as releases.
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+'
+      - '[0-9]+.[0-9]+.[0-9]+-*'
   pull_request:
-    branches:
-      - develop
-      - main
-      - master
-    types:
-      - opened
-      - reopened
-      - synchronize
-      - closed
+    branches: [ "main", "master", "develop" ]
+  release:
+    types: [published]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
-  build-develop-open:
-    if: github.base_ref == 'develop' && github.event.pull_request.merged == false
-    uses: kbase/.github/.github/workflows/reusable_build.yml@main
-    secrets: inherit
-  build-develop-merge:
-    if: github.base_ref == 'develop' && github.event.pull_request.merged == true
-    uses: kbase/.github/.github/workflows/reusable_build-push.yml@main
-    with:
-      name: '${{ github.event.repository.name }}-develop'
-      tags: pr-${{ github.event.number }},latest
-    secrets: inherit
-  build-main-open:
-    if: (github.base_ref == 'main' || github.base_ref == 'master') && github.event.pull_request.merged == false
-    uses: kbase/.github/.github/workflows/reusable_build-push.yml@main
-    with:
-      name: '${{ github.event.repository.name }}'
-      tags: pr-${{ github.event.number }}
-    secrets: inherit
-  build-main-merge:
-    if: (github.base_ref == 'main' || github.base_ref == 'master') && github.event.pull_request.merged == true
-    uses: kbase/.github/.github/workflows/reusable_build-push.yml@main
-    with:
-      name: '${{ github.event.repository.name }}'
-      tags: pr-${{ github.event.number }},latest-rc
-    secrets: inherit
-  trivy-scans:
-    if: (github.base_ref == 'develop' || github.base_ref == 'main' || github.base_ref == 'master' ) && github.event.pull_request.merged == false
-    uses: kbase/.github/.github/workflows/reusable_trivy-scans.yml@main
-    secrets: inherit
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+    
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Extract Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+
+      - name: Build and push Docker image
+        id: build-and-push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64
