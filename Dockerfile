@@ -1,4 +1,4 @@
-FROM ghcr.io/bio-boris/berdl_notebook:0.0.10
+FROM ghcr.io/berdatalakehouse/spark_notebook:main
 USER root
 COPY ./scripts/ /opt/scripts/
 RUN chmod +x -R /opt/scripts/
