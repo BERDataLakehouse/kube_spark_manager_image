@@ -1,4 +1,4 @@
-name: Build Image
+name: Build Kube Spark Manager Image
 
 on:
   workflow_dispatch:
