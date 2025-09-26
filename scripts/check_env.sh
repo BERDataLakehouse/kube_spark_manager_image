@@ -19,8 +19,15 @@ elif [ "$SPARK_MODE" = "worker" ]; then
         "BERDL_DELTALAKE_WAREHOUSE_DIRECTORY_PATH"
         "BERDL_HIVE_METASTORE_URI"
     )
+elif [ "$SPARK_MODE" = "connect" ]; then
+    REQUIRED_VARS=(
+        "SPARK_MODE"
+        "SPARK_MASTER_URL"
+        "SPARK_CONNECT_HOST"
+        "SPARK_CONNECT_PORT"
+    )
 else
-    echo "Error: SPARK_MODE must be 'master' or 'worker'"
+    echo "Error: SPARK_MODE must be 'master', 'worker', or 'connect'"
     exit 1
 fi
 
