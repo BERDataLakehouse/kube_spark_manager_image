@@ -34,7 +34,7 @@ if [ "$SPARK_MODE" = "master" ]; then
 
         # Wait for master to be ready
         echo "Waiting for Spark master to be ready..."
-        for i in {1..30}; do
+        for i in $(seq 1 30); do
             if grep -q "Successfully started service 'sparkMaster'" /tmp/spark-master.log 2>/dev/null; then
                 echo "Spark master is ready!"
                 break
