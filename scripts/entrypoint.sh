@@ -20,21 +20,24 @@ if [ "$SPARK_MODE" = "master" ]; then
             echo "Configuring Hive metastore: $BERDL_HIVE_METASTORE_URI"
             sed -i '/^hive.metastore.uris\s*=/d' /usr/local/spark/conf/spark-defaults.conf
             echo "hive.metastore.uris=$BERDL_HIVE_METASTORE_URI" >> /usr/local/spark/conf/spark-defaults.conf
+        # Determine Spark configuration directory
+        CONF_DIR="${SPARK_CONF_DIR:-${SPARK_HOME}/conf}"
+
+        # Create required directories
+        mkdir -p /tmp/spark-events /tmp/spark-warehouse
+
+        # Configure Hive metastore URI if provided
+        if [ -n "$BERDL_HIVE_METASTORE_URI" ]; then
             echo "Configuring Hive metastore: $BERDL_HIVE_METASTORE_URI"
-            sed -i '/^hive.metastore.uris[[:space:]]*=/d' /usr/local/spark/conf/spark-defaults.conf
-            echo "hive.metastore.uris=$BERDL_HIVE_METASTORE_URI" >> /usr/local/spark/conf/spark-defaults.conf
+            echo "hive.metastore.uris=$BERDL_HIVE_METASTORE_URI" >> "$CONF_DIR/spark-defaults.conf"
         fi
 
         # Configure MinIO S3 if credentials provided (server-side fallback for metastore operations)
         if [ -n "$MINIO_ENDPOINT_URL" ] && [ -n "$MINIO_ACCESS_KEY" ] && [ -n "$MINIO_SECRET_KEY" ]; then
             echo "Configuring MinIO S3: $MINIO_ENDPOINT_URL"
-            sed -i '/^spark.hadoop.fs.s3a.endpoint[[:space:]]*=/d' /usr/local/spark/conf/spark-defaults.conf
-            echo "spark.hadoop.fs.s3a.endpoint=http://$MINIO_ENDPOINT_URL" >> /usr/local/spark/conf/spark-defaults.conf
-            sed -i '/^spark.hadoop.fs.s3a.access.key[[:space:]]*=/d' /usr/local/spark/conf/spark-defaults.conf
-            echo "spark.hadoop.fs.s3a.access.key=$MINIO_ACCESS_KEY" >> /usr/local/spark/conf/spark-defaults.conf
-            sed -i '/^spark.hadoop.fs.s3a.secret.key[[:space:]]*=/d' /usr/local/spark/conf/spark-defaults.conf
-            sed -i '/^spark.hadoop.fs.s3a.secret.key\s*=/d' /usr/local/spark/conf/spark-defaults.conf
-            echo "spark.hadoop.fs.s3a.secret.key=$MINIO_SECRET_KEY" >> /usr/local/spark/conf/spark-defaults.conf
+            echo "spark.hadoop.fs.s3a.endpoint=http://$MINIO_ENDPOINT_URL" >> "$CONF_DIR/spark-defaults.conf"
+            echo "spark.hadoop.fs.s3a.access.key=$MINIO_ACCESS_KEY" >> "$CONF_DIR/spark-defaults.conf"
+            echo "spark.hadoop.fs.s3a.secret.key=$MINIO_SECRET_KEY" >> "$CONF_DIR/spark-defaults.conf"
         fi
 
         # Start master in background (use nohup to detach)
