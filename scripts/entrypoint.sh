@@ -12,14 +12,6 @@ if [ "$SPARK_MODE" = "master" ]; then
     if [ "$SPARK_CONNECT_ENABLED" = "true" ]; then
         echo "Starting Spark master with Spark Connect server..."
 
-        # Create required directories
-        mkdir -p /tmp/spark-events /tmp/spark-warehouse
-
-        # Configure Hive metastore URI if provided
-        if [ -n "$BERDL_HIVE_METASTORE_URI" ]; then
-            echo "Configuring Hive metastore: $BERDL_HIVE_METASTORE_URI"
-            sed -i '/^hive.metastore.uris\s*=/d' /usr/local/spark/conf/spark-defaults.conf
-            echo "hive.metastore.uris=$BERDL_HIVE_METASTORE_URI" >> /usr/local/spark/conf/spark-defaults.conf
         # Determine Spark configuration directory
         CONF_DIR="${SPARK_CONF_DIR:-${SPARK_HOME}/conf}"
 
