@@ -1,6 +1,6 @@
 ARG BASE_TAG=main
 ARG BASE_REGISTRY=ghcr.io/berdatalakehouse/
-FROM ${BASE_REGISTRY}spark_notebook_base:${BASE_TAG}
+FROM ${BASE_REGISTRY}spark_notebook:${BASE_TAG}
 USER root
 COPY ./scripts/ /opt/scripts/
 RUN chmod +x -R /opt/scripts/
