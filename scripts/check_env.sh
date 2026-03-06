@@ -14,10 +14,6 @@ elif [ "$SPARK_MODE" = "worker" ]; then
         "SPARK_WORKER_MEMORY"
         "SPARK_WORKER_PORT"
         "SPARK_WORKER_WEBUI_PORT"
-        "BERDL_REDIS_HOST"
-        "BERDL_REDIS_PORT"
-        "BERDL_DELTALAKE_WAREHOUSE_DIRECTORY_PATH"
-        "BERDL_HIVE_METASTORE_URI"
     )
 else
     echo "Error: SPARK_MODE must be 'master' or 'worker'"
